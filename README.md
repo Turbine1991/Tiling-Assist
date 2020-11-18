@@ -1,5 +1,7 @@
 # Tiling assistant for GNOME
 
+**Note:** This branch is only kept for compability and is not actively maintained. You should use the 2x2-grid-stable branch, if possible.
+
 An extension which adds a Windows-like snap assist to GNOME. It's intended to only work with GNOME's 2 column tiling design.
 
 ## Usage
