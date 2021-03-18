@@ -265,6 +265,10 @@ function onGrabBegin(...params) {
 			const currTileGroup = Util.getTopTileGroup();
 			const freeScreenRects = Util.getFreeScreenRects(currTileGroup);
 			const rects = freeScreenRects.concat(currTileGroup.map(w => w.tiledRect.copy()));
+			const idd = grabbedWindow.get_compositor_private().connect("touch-event", () => {
+				grabbedWindow.get_compositor_private().disconnect(idd);
+				log("touch event gotten");
+			});
 
 			grabbedWindow.grabSignalIDs.push(grabbedWindow.connect("position-changed", onWindowMoving.bind(this, grabbedWindow, [x, y], currTileGroup, rects, freeScreenRects)));
 			break;
@@ -491,8 +495,10 @@ function onGrabEnd(...params) {
 
 // tile previewing via DND and restore window size, if window is already tiled
 function onWindowMoving(window, grabStartPos, currTileGroup, screenRects, freeScreenRects) {
-	const [mouseX, mouseY] = global.get_pointer();
+	const event = Clutter.get_current_event();
+	const [mouseX, mouseY] = event.get_coords();
 	const wRect = window.get_frame_rect();
+	log("window is moving")
 
 	// restore the window size of tiled windows after DND distance of at least 1px
 	// to prevent restoring the window after just clicking on the title/top bar
@@ -530,9 +536,9 @@ function onWindowMoving(window, grabStartPos, currTileGroup, screenRects, freeSc
 	const monitorNr = global.display.get_current_monitor();
 	const workArea = window.get_work_area_for_monitor(monitorNr);
 
-	const quarterCorner = 40;
-	const onTop = mouseY <= workArea.y + 10;
-	const onBottom = mouseY >= workArea.y + workArea.height - 10;
+	const quarterCorner = 100;
+	const onTop = mouseY <= workArea.y + 100;
+	const onBottom = mouseY >= workArea.y + workArea.height - 100;
 	const onLeft = mouseX <= workArea.x + quarterCorner;
 	const onRight = mouseX >= workArea.x + workArea.width - quarterCorner;
 
@@ -554,7 +560,6 @@ function onWindowMoving(window, grabStartPos, currTileGroup, screenRects, freeSc
 	const tileBottomHalf = onBottom;
 
 	// halve tiled window which is hovered while pressing ctrl
-	const event = Clutter.get_current_event();
 	const modifiers = event ? event.get_state() : 0;
 	const isCtrlPressed = modifiers & Clutter.ModifierType.CONTROL_MASK;
 
